@@ -346,6 +346,16 @@ async def get_schedules(current_user: User = Depends(get_current_user)):
             schedule['created_at'] = datetime.fromisoformat(schedule['created_at'])
     return schedules
 
+@api_router.put("/schedules/{schedule_id}")
+async def update_schedule(schedule_id: str, schedule_data: ScheduleCreate, current_user: User = Depends(get_current_user)):
+    result = await db.schedules.update_one(
+        {"id": schedule_id, "user_id": current_user.id},
+        {"$set": schedule_data.model_dump()}
+    )
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Schedule not found")
+    return {"message": "Schedule updated"}
+
 @api_router.delete("/schedules/{schedule_id}")
 async def delete_schedule(schedule_id: str, current_user: User = Depends(get_current_user)):
     result = await db.schedules.delete_one({"id": schedule_id, "user_id": current_user.id})
