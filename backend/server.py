@@ -311,6 +311,16 @@ async def get_teachers(current_user: User = Depends(get_current_user)):
             teacher['created_at'] = datetime.fromisoformat(teacher['created_at'])
     return teachers
 
+@api_router.put("/teachers/{teacher_id}")
+async def update_teacher(teacher_id: str, teacher_data: TeacherCreate, current_user: User = Depends(get_current_user)):
+    result = await db.teachers.update_one(
+        {"id": teacher_id, "user_id": current_user.id},
+        {"$set": teacher_data.model_dump()}
+    )
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Teacher not found")
+    return {"message": "Teacher updated"}
+
 @api_router.delete("/teachers/{teacher_id}")
 async def delete_teacher(teacher_id: str, current_user: User = Depends(get_current_user)):
     result = await db.teachers.delete_one({"id": teacher_id, "user_id": current_user.id})
