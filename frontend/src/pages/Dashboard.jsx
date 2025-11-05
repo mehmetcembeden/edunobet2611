@@ -7,6 +7,7 @@ import ScheduleTab from '@/components/ScheduleTab';
 import TeachersTab from '@/components/TeachersTab';
 import DutyAssignmentsTab from '@/components/DutyAssignmentsTab';
 import SchoolDutyTab from '@/components/SchoolDutyTab';
+import ArchiveTab from '@/components/ArchiveTab';
 
 export default function Dashboard({ user, onLogout }) {
   const [activeTab, setActiveTab] = useState('locations');
@@ -87,6 +88,13 @@ export default function Dashboard({ user, onLogout }) {
             >
               Okul Nöbet Takvimi
             </TabsTrigger>
+            <TabsTrigger 
+              value="archive" 
+              data-testid="archive-tab"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-700 data-[state=active]:text-white px-6 py-2.5 rounded-lg font-medium transition-all"
+            >
+              Arşiv
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="locations" className="mt-6">
@@ -107,6 +115,10 @@ export default function Dashboard({ user, onLogout }) {
 
           <TabsContent value="school-duty" className="mt-6">
             <SchoolDutyTab />
+          </TabsContent>
+
+          <TabsContent value="archive" className="mt-6">
+            <ArchiveTab />
           </TabsContent>
         </Tabs>
       </div>
