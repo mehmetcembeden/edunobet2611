@@ -119,12 +119,20 @@ class DutyAssignment(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     teacher_id: str
-    location: str  # Floor/classroom location
+    classroom_id: str  # Classroom/location ID
     day: int  # 0-4 (Monday-Friday)
-    time_slot: str  # e.g., "08:00-09:00"
     week_number: int
+    approved: bool = False
+    approved_at: Optional[datetime] = None
+    transformed_from: Optional[str] = None  # ID of original assignment
     user_id: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class DutyAssignmentCreate(BaseModel):
+    teacher_id: str
+    classroom_id: str
+    day: int
+    week_number: int
 
 class SchoolDuty(BaseModel):
     model_config = ConfigDict(extra="ignore")
