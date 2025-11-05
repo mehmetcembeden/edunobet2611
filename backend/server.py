@@ -241,6 +241,16 @@ async def get_schools(current_user: User = Depends(get_current_user)):
             school['created_at'] = datetime.fromisoformat(school['created_at'])
     return schools
 
+@api_router.put("/schools/{school_id}")
+async def update_school(school_id: str, school_data: SchoolCreate, current_user: User = Depends(get_current_user)):
+    result = await db.schools.update_one(
+        {"id": school_id, "user_id": current_user.id},
+        {"$set": school_data.model_dump()}
+    )
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="School not found")
+    return {"message": "School updated"}
+
 @api_router.delete("/schools/{school_id}")
 async def delete_school(school_id: str, current_user: User = Depends(get_current_user)):
     result = await db.schools.delete_one({"id": school_id, "user_id": current_user.id})
