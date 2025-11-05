@@ -332,8 +332,8 @@ async def generate_duty_assignments(week_number: int, current_user: User = Depen
     schedules = await db.schedules.find({"user_id": current_user.id}, {"_id": 0}).to_list(10000)
     classrooms = await db.classrooms.find({"user_id": current_user.id}, {"_id": 0}).to_list(1000)
     
-    # Clear existing assignments for this week
-    await db.duty_assignments.delete_many({"user_id": current_user.id, "week_number": week_number})
+    # Clear existing unapproved assignments for this week
+    await db.duty_assignments.delete_many({"user_id": current_user.id, "week_number": week_number, "approved": False})
     
     assignments = []
     teacher_duty_count = {t['id']: 0 for t in teachers}
@@ -344,61 +344,293 @@ async def generate_duty_assignments(week_number: int, current_user: User = Depen
         key = f"{schedule['teacher_id']}_{schedule['day']}"
         teacher_schedule_count[key] = teacher_schedule_count.get(key, 0) + 1
     
-    # Assign duties for each day and time slot
-    time_slots = ["08:00-09:00", "09:00-10:00", "10:00-11:00", "11:00-12:00", "12:00-13:00"]
+    # Track which classroom+day combinations are assigned
+    assigned_locations = set()
     
+    # Assign duties: one teacher per classroom per day
     for day in range(5):  # Monday to Friday
         for classroom in classrooms:
-            for time_slot in time_slots[:2]:  # 2 duty shifts per day
-                # Find suitable teacher
-                suitable_teachers = [
-                    t for t in teachers 
-                    if teacher_duty_count[t['id']] < t['weekly_duty_limit']
-                ]
-                
-                if not suitable_teachers:
-                    continue
-                
-                # Sort by: least duties assigned, then least classes that day
-                suitable_teachers.sort(
-                    key=lambda t: (
-                        teacher_duty_count[t['id']], 
-                        teacher_schedule_count.get(f"{t['id']}_{day}", 0)
-                    )
+            location_key = f"{classroom['id']}_{day}"
+            if location_key in assigned_locations:
+                continue
+            
+            # Find suitable teacher
+            suitable_teachers = [
+                t for t in teachers 
+                if teacher_duty_count[t['id']] < t['weekly_duty_limit']
+            ]
+            
+            if not suitable_teachers:
+                continue
+            
+            # Sort by: least duties assigned, then least classes that day
+            suitable_teachers.sort(
+                key=lambda t: (
+                    teacher_duty_count[t['id']], 
+                    teacher_schedule_count.get(f"{t['id']}_{day}", 0)
                 )
-                
-                selected_teacher = suitable_teachers[0]
-                
-                assignment = DutyAssignment(
-                    teacher_id=selected_teacher['id'],
-                    location=f"{classroom['name']} (Kat {classroom['floor']})",
-                    day=day,
-                    time_slot=time_slot,
-                    week_number=week_number,
-                    user_id=current_user.id
-                )
-                
-                doc = assignment.model_dump()
-                doc['created_at'] = doc['created_at'].isoformat()
-                await db.duty_assignments.insert_one(doc)
-                
-                teacher_duty_count[selected_teacher['id']] += 1
-                assignments.append(assignment)
+            )
+            
+            selected_teacher = suitable_teachers[0]
+            
+            assignment = DutyAssignment(
+                teacher_id=selected_teacher['id'],
+                classroom_id=classroom['id'],
+                day=day,
+                week_number=week_number,
+                approved=False,
+                user_id=current_user.id
+            )
+            
+            doc = assignment.model_dump()
+            doc['created_at'] = doc['created_at'].isoformat()
+            if doc.get('approved_at'):
+                doc['approved_at'] = doc['approved_at'].isoformat()
+            await db.duty_assignments.insert_one(doc)
+            
+            teacher_duty_count[selected_teacher['id']] += 1
+            assigned_locations.add(location_key)
+            assignments.append(assignment)
     
-    return {"message": f"Generated {len(assignments)} duty assignments for week {week_number}"}
+    # Analyze and provide suggestions
+    suggestions = []
+    for teacher in teachers:
+        teacher_id = teacher['id']
+        duty_days = [a for a in assignments if a.teacher_id == teacher_id]
+        
+        # Check if teacher has heavy class load on duty days
+        for assignment in duty_days:
+            class_count = teacher_schedule_count.get(f"{teacher_id}_{assignment.day}", 0)
+            if class_count >= 7:  # Heavy day (7+ classes)
+                suggestions.append({
+                    "teacher_id": teacher_id,
+                    "teacher_name": teacher['name'],
+                    "day": assignment.day,
+                    "class_count": class_count,
+                    "suggestion": f"{teacher['name']} bu gün {class_count} ders yapıyor. Nöbet vermemek daha uygun olabilir."
+                })
+    
+    return {
+        "message": f"Generated {len(assignments)} duty assignments for week {week_number}",
+        "suggestions": suggestions
+    }
 
 @api_router.get("/duty-assignments")
-async def get_duty_assignments(week_number: int, current_user: User = Depends(get_current_user)):
-    assignments = await db.duty_assignments.find(
-        {"user_id": current_user.id, "week_number": week_number}, 
-        {"_id": 0}
-    ).to_list(10000)
+async def get_duty_assignments(week_number: int, approved: Optional[bool] = None, current_user: User = Depends(get_current_user)):
+    query = {"user_id": current_user.id, "week_number": week_number}
+    if approved is not None:
+        query["approved"] = approved
+        
+    assignments = await db.duty_assignments.find(query, {"_id": 0}).to_list(10000)
     
     for assignment in assignments:
         if isinstance(assignment.get('created_at'), str):
             assignment['created_at'] = datetime.fromisoformat(assignment['created_at'])
+        if assignment.get('approved_at') and isinstance(assignment.get('approved_at'), str):
+            assignment['approved_at'] = datetime.fromisoformat(assignment['approved_at'])
     
     return assignments
+
+@api_router.post("/duty-assignments", response_model=DutyAssignment)
+async def create_duty_assignment(assignment_data: DutyAssignmentCreate, current_user: User = Depends(get_current_user)):
+    assignment = DutyAssignment(**assignment_data.model_dump(), user_id=current_user.id)
+    doc = assignment.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    if doc.get('approved_at'):
+        doc['approved_at'] = doc['approved_at'].isoformat()
+    await db.duty_assignments.insert_one(doc)
+    return assignment
+
+@api_router.put("/duty-assignments/{assignment_id}")
+async def update_duty_assignment(
+    assignment_id: str, 
+    assignment_data: DutyAssignmentCreate, 
+    current_user: User = Depends(get_current_user)
+):
+    result = await db.duty_assignments.update_one(
+        {"id": assignment_id, "user_id": current_user.id},
+        {"$set": assignment_data.model_dump()}
+    )
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Assignment not found")
+    return {"message": "Assignment updated"}
+
+@api_router.delete("/duty-assignments/{assignment_id}")
+async def delete_duty_assignment(assignment_id: str, current_user: User = Depends(get_current_user)):
+    result = await db.duty_assignments.delete_one({"id": assignment_id, "user_id": current_user.id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Assignment not found")
+    return {"message": "Assignment deleted"}
+
+@api_router.post("/duty-assignments/approve")
+async def approve_duty_assignments(week_number: int, current_user: User = Depends(get_current_user)):
+    result = await db.duty_assignments.update_many(
+        {"user_id": current_user.id, "week_number": week_number, "approved": False},
+        {"$set": {"approved": True, "approved_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    return {"message": f"Approved {result.modified_count} duty assignments"}
+
+@api_router.post("/duty-assignments/transform")
+async def transform_duty_assignments(week_number: int, current_user: User = Depends(get_current_user)):
+    # Get current approved assignments
+    current_assignments = await db.duty_assignments.find(
+        {"user_id": current_user.id, "week_number": week_number, "approved": True},
+        {"_id": 0}
+    ).to_list(10000)
+    
+    if not current_assignments:
+        raise HTTPException(status_code=404, detail="No approved assignments found for this week")
+    
+    # Get schedules and teachers
+    teachers = await db.teachers.find({"user_id": current_user.id}, {"_id": 0}).to_list(1000)
+    schedules = await db.schedules.find({"user_id": current_user.id}, {"_id": 0}).to_list(10000)
+    
+    # Calculate teacher workload per day
+    teacher_schedule_count = {}
+    for schedule in schedules:
+        key = f"{schedule['teacher_id']}_{schedule['day']}"
+        teacher_schedule_count[key] = teacher_schedule_count.get(key, 0) + 1
+    
+    # Create new assignments with transformation
+    new_assignments = []
+    teacher_duty_count = {t['id']: 0 for t in teachers}
+    
+    for old_assignment in current_assignments:
+        day = old_assignment['day']
+        classroom_id = old_assignment['classroom_id']
+        
+        # Find best teacher for this day based on schedule
+        suitable_teachers = [
+            t for t in teachers 
+            if teacher_duty_count[t['id']] < t['weekly_duty_limit']
+        ]
+        
+        if not suitable_teachers:
+            continue
+        
+        suitable_teachers.sort(
+            key=lambda t: (
+                teacher_duty_count[t['id']], 
+                teacher_schedule_count.get(f"{t['id']}_{day}", 0)
+            )
+        )
+        
+        selected_teacher = suitable_teachers[0]
+        
+        assignment = DutyAssignment(
+            teacher_id=selected_teacher['id'],
+            classroom_id=classroom_id,
+            day=day,
+            week_number=week_number,
+            approved=False,
+            transformed_from=old_assignment['id'],
+            user_id=current_user.id
+        )
+        
+        doc = assignment.model_dump()
+        doc['created_at'] = doc['created_at'].isoformat()
+        if doc.get('approved_at'):
+            doc['approved_at'] = doc['approved_at'].isoformat()
+        await db.duty_assignments.insert_one(doc)
+        
+        teacher_duty_count[selected_teacher['id']] += 1
+        new_assignments.append(assignment)
+    
+    return {"message": f"Transformed {len(new_assignments)} assignments", "count": len(new_assignments)}
+
+@api_router.get("/duty-assignments/export-pdf")
+async def export_duty_assignments_pdf(week_number: int, current_user: User = Depends(get_current_user)):
+    # Get approved assignments
+    assignments = await db.duty_assignments.find(
+        {"user_id": current_user.id, "week_number": week_number, "approved": True},
+        {"_id": 0}
+    ).to_list(10000)
+    
+    if not assignments:
+        raise HTTPException(status_code=404, detail="No approved assignments found")
+    
+    # Get related data
+    teachers = await db.teachers.find({"user_id": current_user.id}, {"_id": 0}).to_list(1000)
+    classrooms = await db.classrooms.find({"user_id": current_user.id}, {"_id": 0}).to_list(1000)
+    
+    teacher_map = {t['id']: t['name'] for t in teachers}
+    classroom_map = {c['id']: c['name'] for c in classrooms}
+    
+    # Create PDF
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4))
+    elements = []
+    
+    styles = getSampleStyleSheet()
+    elements.append(Paragraph(f"Hafta {week_number} Nöbet Çizelgesi", styles['Title']))
+    elements.append(Spacer(1, 12))
+    
+    # Create table
+    days = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma']
+    
+    # Group assignments by classroom
+    classroom_assignments = {}
+    for assignment in assignments:
+        classroom_id = assignment['classroom_id']
+        if classroom_id not in classroom_assignments:
+            classroom_assignments[classroom_id] = {}
+        classroom_assignments[classroom_id][assignment['day']] = assignment['teacher_id']
+    
+    # Build table data
+    table_data = [['Nöbet Yeri'] + days]
+    
+    for classroom_id, day_assignments in classroom_assignments.items():
+        row = [classroom_map.get(classroom_id, 'Bilinmeyen')]
+        for day in range(5):
+            teacher_id = day_assignments.get(day, '')
+            teacher_name = teacher_map.get(teacher_id, '-') if teacher_id else '-'
+            row.append(teacher_name)
+        table_data.append(row)
+    
+    table = Table(table_data)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.purple),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+    
+    elements.append(table)
+    doc.build(elements)
+    
+    buffer.seek(0)
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=nobet_hafta_{week_number}.pdf"}
+    )
+
+@api_router.get("/duty-assignments/archive")
+async def get_archived_assignments(current_user: User = Depends(get_current_user)):
+    # Get all approved assignments grouped by week
+    assignments = await db.duty_assignments.find(
+        {"user_id": current_user.id, "approved": True},
+        {"_id": 0}
+    ).to_list(10000)
+    
+    # Group by week
+    weeks = {}
+    for assignment in assignments:
+        week = assignment['week_number']
+        if week not in weeks:
+            weeks[week] = {
+                "week_number": week,
+                "approved_at": assignment.get('approved_at'),
+                "transformed_from": assignment.get('transformed_from'),
+                "count": 0
+            }
+        weeks[week]['count'] += 1
+    
+    return list(weeks.values())
 
 # ===== SCHOOL DUTY ENDPOINTS =====
 
