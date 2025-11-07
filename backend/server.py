@@ -421,11 +421,11 @@ async def generate_duty_assignments(week_number: int, current_user: User = Depen
                 if not suitable_teachers:
                     continue
                 
-                # Sort by: least duties assigned, then least classes that day
+                # Sort by: 1) least duties assigned, 2) least hours that day (PRIORITY)
                 suitable_teachers.sort(
                     key=lambda t: (
                         teacher_duty_count[t['id']], 
-                        teacher_schedule_count.get(f"{t['id']}_{day}", 0)
+                        teacher_workload.get(t['id'], [0,0,0,0,0])[day]
                     )
                 )
                 
