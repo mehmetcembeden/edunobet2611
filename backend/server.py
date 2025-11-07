@@ -101,25 +101,17 @@ class TeacherCreate(BaseModel):
     school_ids: List[str]
     weekly_duty_limit: int
 
-class Schedule(BaseModel):
+class TeacherSchedule(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     teacher_id: str
-    school_id: str
-    classroom_id: str
-    day: int  # 0-4 (Monday-Friday)
-    hour: int  # 0-8 (9 hours per day)
-    subject: str
+    weekly_hours: List[int]  # 5 days, each day has hour count (0-9)
     user_id: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-class ScheduleCreate(BaseModel):
+class TeacherScheduleCreate(BaseModel):
     teacher_id: str
-    school_id: str
-    classroom_id: str
-    day: int
-    hour: int
-    subject: str
+    weekly_hours: List[int]  # [monday_hours, tuesday_hours, ..., friday_hours]
 
 class DutyAssignment(BaseModel):
     model_config = ConfigDict(extra="ignore")
