@@ -97,6 +97,13 @@ export default function Dashboard({ user, onLogout }) {
             >
               Arşiv
             </TabsTrigger>
+            <TabsTrigger 
+              value="statistics" 
+              data-testid="statistics-tab"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-700 data-[state=active]:text-white px-3 sm:px-6 py-2 sm:py-2.5 rounded-lg font-medium transition-all text-xs sm:text-sm"
+            >
+              İstatistikler
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="locations" className="mt-6">
