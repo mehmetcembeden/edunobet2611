@@ -230,8 +230,8 @@ export default function ArchiveTab() {
                       onClick={() => viewAssignments(archive.week_number)}
                       className="gap-2 border-purple-200 hover:bg-purple-50"
                     >
-                      <Eye className="w-4 h-4" />
-                      Görüntüle
+                      <Edit className="w-4 h-4" />
+                      Düzenle
                     </Button>
                     <Button
                       size="sm"
