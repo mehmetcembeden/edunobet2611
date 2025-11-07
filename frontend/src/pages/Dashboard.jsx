@@ -129,6 +129,10 @@ export default function Dashboard({ user, onLogout }) {
           <TabsContent value="archive" className="mt-6">
             <ArchiveTab />
           </TabsContent>
+
+          <TabsContent value="statistics" className="mt-6">
+            <StatisticsTab />
+          </TabsContent>
         </Tabs>
       </div>
     </div>
