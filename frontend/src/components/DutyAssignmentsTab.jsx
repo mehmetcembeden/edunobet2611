@@ -277,14 +277,25 @@ export default function DutyAssignmentsTab() {
                 {loading ? 'Oluşturuluyor...' : 'Nöbet Oluştur'}
               </Button>
               {assignments.length > 0 && (
-                <Button 
-                  onClick={handleApprove}
-                  data-testid="approve-button"
-                  className="bg-green-600 hover:bg-green-700 gap-2 shadow-md"
-                >
-                  <CheckCircle className="w-4 h-4" />
-                  Onayla
-                </Button>
+                <>
+                  <Button 
+                    onClick={handleApprove}
+                    data-testid="approve-button"
+                    className="bg-green-600 hover:bg-green-700 gap-2 shadow-md"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    Onayla
+                  </Button>
+                  <Button 
+                    onClick={handleClear}
+                    data-testid="clear-button"
+                    variant="outline"
+                    className="border-red-300 text-red-600 hover:bg-red-50 gap-2"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Temizle
+                  </Button>
+                </>
               )}
             </div>
           </div>
