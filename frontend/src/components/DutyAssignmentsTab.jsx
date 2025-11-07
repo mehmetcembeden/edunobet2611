@@ -153,14 +153,29 @@ export default function DutyAssignmentsTab() {
     return classroom ? classroom.name : 'Bilinmiyor';
   };
 
-  // Create table data structure
-  const tableData = classrooms.map(classroom => {
-    const row = { classroom };
-    DAYS.forEach((_, dayIdx) => {
-      const assignment = assignments.find(a => a.classroom_id === classroom.id && a.day === dayIdx);
-      row[`day_${dayIdx}`] = assignment;
+  const getSchoolName = (schoolId) => {
+    const school = schools.find(s => s.id === schoolId);
+    return school ? school.name : 'Bilinmiyor';
+  };
+
+  // Group classrooms by school
+  const classroomsBySchool = {};
+  schools.forEach(school => {
+    classroomsBySchool[school.id] = classrooms.filter(c => c.school_id === school.id);
+  });
+
+  // Create table data structure for each school
+  const schoolTableData = {};
+  schools.forEach(school => {
+    const schoolClassrooms = classroomsBySchool[school.id] || [];
+    schoolTableData[school.id] = schoolClassrooms.map(classroom => {
+      const row = { classroom };
+      DAYS.forEach((_, dayIdx) => {
+        const assignment = assignments.find(a => a.classroom_id === classroom.id && a.day === dayIdx);
+        row[`day_${dayIdx}`] = assignment;
+      });
+      return row;
     });
-    return row;
   });
 
   // Calculate teacher duty counts
