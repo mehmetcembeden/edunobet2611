@@ -153,11 +153,11 @@ export default function ArchiveTab() {
   };
 
   const transformDuties = async (weekNumber) => {
-    if (!window.confirm('Bu nöbet çizelgesini ders programına göre dönüştürmek istediğinizden emin misiniz?')) return;
+    if (!window.confirm('Bu nöbet çizelgesini ders programına göre dönüştürmek istediğinizden emin misiniz? Yeni bir arşiv kaydı oluşturulacak.')) return;
     setTransforming(true);
     try {
-      await axios.post(`${API}/duty-assignments/transform?week_number=${weekNumber}`);
-      toast.success('Nöbet dönüştürüldü. Haftalık Nöbet sekmesinden kontrol edip onaylayabilirsiniz.');
+      const response = await axios.post(`${API}/duty-assignments/transform?week_number=${weekNumber}`);
+      toast.success(`Nöbet dönüştürüldü! Yeni hafta numarası: ${response.data.new_week_number}. Arşivde yeni kayıt olarak görebilirsiniz.`);
       await fetchArchives();
     } catch (error) {
       toast.error('Dönüştürme başarısız');
