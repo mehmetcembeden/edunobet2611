@@ -133,6 +133,8 @@ class DutyAssignmentCreate(BaseModel):
     classroom_id: str
     day: int
     week_number: int
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
 
 class SchoolDuty(BaseModel):
     model_config = ConfigDict(extra="ignore")
