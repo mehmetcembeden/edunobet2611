@@ -138,7 +138,7 @@ export default function TeachersTab() {
                   Öğretmen Ekle
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
+              <DialogContent className="sm:max-w-md mx-4">
                 <DialogHeader>
                   <DialogTitle>Yeni Öğretmen Ekle</DialogTitle>
                   <DialogDescription>Yeni bir öğretmen bilgisi ekleyin</DialogDescription>
@@ -175,14 +175,14 @@ export default function TeachersTab() {
                   <div className="space-y-2">
                     <Label htmlFor="weekly-limit">
                       Haftalık Nöbet Limiti
-                      <span className="text-xs text-gray-500 ml-2">(saat/hafta)</span>
+                      <span className="text-xs text-gray-500 ml-2">(gün/hafta)</span>
                     </Label>
                     <Input
                       id="weekly-limit"
                       data-testid="weekly-limit-input"
                       type="number"
                       min="1"
-                      max="40"
+                      max="5"
                       value={teacherForm.weekly_duty_limit}
                       onChange={(e) => setTeacherForm({ ...teacherForm, weekly_duty_limit: parseInt(e.target.value) })}
                       required
@@ -200,7 +200,7 @@ export default function TeachersTab() {
             </Dialog>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 sm:p-6">
           {teachers.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <Users className="w-12 h-12 mx-auto mb-3 opacity-30" />
