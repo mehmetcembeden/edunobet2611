@@ -320,40 +320,48 @@ async def delete_teacher(teacher_id: str, current_user: User = Depends(get_curre
         raise HTTPException(status_code=404, detail="Teacher not found")
     return {"message": "Teacher deleted"}
 
-# ===== SCHEDULE ENDPOINTS =====
+# ===== TEACHER SCHEDULE ENDPOINTS =====
 
-@api_router.post("/schedules", response_model=Schedule)
-async def create_schedule(schedule_data: ScheduleCreate, current_user: User = Depends(get_current_user)):
-    schedule = Schedule(**schedule_data.model_dump(), user_id=current_user.id)
+@api_router.post("/teacher-schedules", response_model=TeacherSchedule)
+async def create_teacher_schedule(schedule_data: TeacherScheduleCreate, current_user: User = Depends(get_current_user)):
+    # Check if schedule already exists for this teacher
+    existing = await db.teacher_schedules.find_one({"teacher_id": schedule_data.teacher_id, "user_id": current_user.id})
+    if existing:
+        # Update existing
+        result = await db.teacher_schedules.update_one(
+            {"teacher_id": schedule_data.teacher_id, "user_id": current_user.id},
+            {"$set": {"weekly_hours": schedule_data.weekly_hours}}
+        )
+        existing['weekly_hours'] = schedule_data.weekly_hours
+        return TeacherSchedule(**existing)
+    
+    # Create new
+    schedule = TeacherSchedule(**schedule_data.model_dump(), user_id=current_user.id)
     doc = schedule.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
-    await db.schedules.insert_one(doc)
+    await db.teacher_schedules.insert_one(doc)
     return schedule
 
-@api_router.get("/schedules", response_model=List[Schedule])
-async def get_schedules(current_user: User = Depends(get_current_user)):
-    schedules = await db.schedules.find({"user_id": current_user.id}, {"_id": 0}).to_list(10000)
+@api_router.get("/teacher-schedules", response_model=List[TeacherSchedule])
+async def get_teacher_schedules(current_user: User = Depends(get_current_user)):
+    schedules = await db.teacher_schedules.find({"user_id": current_user.id}, {"_id": 0}).to_list(1000)
     for schedule in schedules:
         if isinstance(schedule.get('created_at'), str):
             schedule['created_at'] = datetime.fromisoformat(schedule['created_at'])
     return schedules
 
-@api_router.put("/schedules/{schedule_id}")
-async def update_schedule(schedule_id: str, schedule_data: ScheduleCreate, current_user: User = Depends(get_current_user)):
-    result = await db.schedules.update_one(
-        {"id": schedule_id, "user_id": current_user.id},
-        {"$set": schedule_data.model_dump()}
+@api_router.get("/teacher-schedules/{teacher_id}")
+async def get_teacher_schedule(teacher_id: str, current_user: User = Depends(get_current_user)):
+    schedule = await db.teacher_schedules.find_one(
+        {"teacher_id": teacher_id, "user_id": current_user.id},
+        {"_id": 0}
     )
-    if result.modified_count == 0:
-        raise HTTPException(status_code=404, detail="Schedule not found")
-    return {"message": "Schedule updated"}
-
-@api_router.delete("/schedules/{schedule_id}")
-async def delete_schedule(schedule_id: str, current_user: User = Depends(get_current_user)):
-    result = await db.schedules.delete_one({"id": schedule_id, "user_id": current_user.id})
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Schedule not found")
-    return {"message": "Schedule deleted"}
+    if not schedule:
+        # Return default empty schedule
+        return {"teacher_id": teacher_id, "weekly_hours": [0, 0, 0, 0, 0]}
+    if isinstance(schedule.get('created_at'), str):
+        schedule['created_at'] = datetime.fromisoformat(schedule['created_at'])
+    return schedule
 
 # ===== DUTY ASSIGNMENT ENDPOINTS =====
 
