@@ -16,6 +16,7 @@ export default function DutyAssignmentsTab() {
   const [assignments, setAssignments] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [classrooms, setClassrooms] = useState([]);
+  const [schools, setSchools] = useState([]);
   const [weekNumber, setWeekNumber] = useState(1);
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
