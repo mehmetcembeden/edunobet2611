@@ -52,47 +52,47 @@ export default function Dashboard({ user, onLogout }) {
 
       {/* Main Content */}
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-white/80 backdrop-blur-sm p-1.5 h-auto flex-wrap gap-1 shadow-md border border-purple-100" data-testid="main-tabs">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
+          <TabsList className="bg-white/80 backdrop-blur-sm p-1 sm:p-1.5 h-auto flex-wrap gap-1 shadow-md border border-purple-100 w-full justify-start" data-testid="main-tabs">
             <TabsTrigger 
               value="locations" 
               data-testid="locations-tab"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-700 data-[state=active]:text-white px-6 py-2.5 rounded-lg font-medium transition-all"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-700 data-[state=active]:text-white px-3 sm:px-6 py-2 sm:py-2.5 rounded-lg font-medium transition-all text-xs sm:text-sm"
             >
               Nöbet Yerleri
             </TabsTrigger>
             <TabsTrigger 
               value="schedule" 
               data-testid="schedule-tab"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-700 data-[state=active]:text-white px-6 py-2.5 rounded-lg font-medium transition-all"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-700 data-[state=active]:text-white px-3 sm:px-6 py-2 sm:py-2.5 rounded-lg font-medium transition-all text-xs sm:text-sm"
             >
               Ders Programı
             </TabsTrigger>
             <TabsTrigger 
               value="teachers" 
               data-testid="teachers-tab"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-700 data-[state=active]:text-white px-6 py-2.5 rounded-lg font-medium transition-all"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-700 data-[state=active]:text-white px-3 sm:px-6 py-2 sm:py-2.5 rounded-lg font-medium transition-all text-xs sm:text-sm"
             >
               Öğretmenler
             </TabsTrigger>
             <TabsTrigger 
               value="assignments" 
               data-testid="assignments-tab"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-700 data-[state=active]:text-white px-6 py-2.5 rounded-lg font-medium transition-all"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-700 data-[state=active]:text-white px-3 sm:px-6 py-2 sm:py-2.5 rounded-lg font-medium transition-all text-xs sm:text-sm"
             >
               Haftalık Nöbet
             </TabsTrigger>
             <TabsTrigger 
               value="school-duty" 
               data-testid="school-duty-tab"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-700 data-[state=active]:text-white px-6 py-2.5 rounded-lg font-medium transition-all"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-700 data-[state=active]:text-white px-3 sm:px-6 py-2 sm:py-2.5 rounded-lg font-medium transition-all text-xs sm:text-sm"
             >
-              Okul Nöbet Takvimi
+              Okul Nöbet
             </TabsTrigger>
             <TabsTrigger 
               value="archive" 
               data-testid="archive-tab"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-700 data-[state=active]:text-white px-6 py-2.5 rounded-lg font-medium transition-all"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-700 data-[state=active]:text-white px-3 sm:px-6 py-2 sm:py-2.5 rounded-lg font-medium transition-all text-xs sm:text-sm"
             >
               Arşiv
             </TabsTrigger>
