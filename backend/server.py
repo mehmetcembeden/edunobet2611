@@ -688,11 +688,62 @@ async def get_archived_assignments(current_user: User = Depends(get_current_user
                 "week_number": week,
                 "approved_at": assignment.get('approved_at'),
                 "transformed_from": assignment.get('transformed_from'),
+                "start_date": assignment.get('start_date'),
+                "end_date": assignment.get('end_date'),
                 "count": 0
             }
         weeks[week]['count'] += 1
     
     return list(weeks.values())
+
+@api_router.get("/duty-assignments/statistics")
+async def get_duty_statistics(
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    current_user: User = Depends(get_current_user)
+):
+    # Get approved assignments within date range
+    query = {"user_id": current_user.id, "approved": True}
+    if start_date and end_date:
+        query["$or"] = [
+            {"start_date": {"$gte": start_date, "$lte": end_date}},
+            {"end_date": {"$gte": start_date, "$lte": end_date}}
+        ]
+    
+    assignments = await db.duty_assignments.find(query, {"_id": 0}).to_list(10000)
+    
+    # Get teachers and classrooms
+    teachers = await db.teachers.find({"user_id": current_user.id}, {"_id": 0}).to_list(1000)
+    classrooms = await db.classrooms.find({"user_id": current_user.id}, {"_id": 0}).to_list(1000)
+    
+    teacher_map = {t['id']: t['name'] for t in teachers}
+    classroom_map = {c['id']: c['name'] for c in classrooms}
+    
+    # Calculate statistics
+    stats = {}
+    for assignment in assignments:
+        teacher_id = assignment['teacher_id']
+        classroom_id = assignment['classroom_id']
+        key = f"{teacher_id}_{classroom_id}"
+        
+        if key not in stats:
+            stats[key] = {
+                "teacher_id": teacher_id,
+                "teacher_name": teacher_map.get(teacher_id, "Bilinmiyor"),
+                "classroom_id": classroom_id,
+                "classroom_name": classroom_map.get(classroom_id, "Bilinmiyor"),
+                "total_days": 0,
+                "date_ranges": []
+            }
+        
+        stats[key]["total_days"] += 1
+        if assignment.get('start_date') and assignment.get('end_date'):
+            stats[key]["date_ranges"].append({
+                "start": assignment['start_date'],
+                "end": assignment['end_date']
+            })
+    
+    return list(stats.values())
 
 # ===== SCHOOL DUTY ENDPOINTS =====
 
