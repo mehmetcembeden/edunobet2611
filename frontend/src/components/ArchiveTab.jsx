@@ -60,10 +60,68 @@ export default function ArchiveTab() {
       const response = await axios.get(`${API}/duty-assignments?week_number=${weekNumber}&approved=true`);
       setAssignments(response.data);
       setSelectedWeek(weekNumber);
+      setEditMode(false);
       setShowViewDialog(true);
     } catch (error) {
       toast.error('Nöbetler yüklenemedi');
     }
+  };
+
+  const handleAddAssignment = async (e) => {
+    e.preventDefault();
+    try {
+      const newAssignment = {
+        ...assignmentForm,
+        week_number: selectedWeek,
+        start_date: assignments[0]?.start_date,
+        end_date: assignments[0]?.end_date
+      };
+      
+      const response = await axios.post(`${API}/duty-assignments`, newAssignment);
+      // Mark as approved
+      await axios.post(`${API}/duty-assignments/approve?week_number=${selectedWeek}`);
+      
+      toast.success('Nöbet eklendi');
+      setShowAddDialog(false);
+      setAssignmentForm({ teacher_id: '', classroom_id: '', day: 0 });
+      await viewAssignments(selectedWeek);
+    } catch (error) {
+      toast.error('Nöbet eklenemedi');
+    }
+  };
+
+  const handleEditAssignment = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.put(`${API}/duty-assignments/${editingAssignment.id}`, assignmentForm);
+      toast.success('Nöbet güncellendi');
+      setShowEditDialog(false);
+      setEditingAssignment(null);
+      await viewAssignments(selectedWeek);
+    } catch (error) {
+      toast.error('Nöbet güncellenemedi');
+    }
+  };
+
+  const handleDeleteAssignment = async (assignmentId) => {
+    if (!window.confirm('Bu nöbeti silmek istediğinizden emin misiniz?')) return;
+    try {
+      await axios.delete(`${API}/duty-assignments/${assignmentId}`);
+      toast.success('Nöbet silindi');
+      await viewAssignments(selectedWeek);
+    } catch (error) {
+      toast.error('Nöbet silinemedi');
+    }
+  };
+
+  const openEditDialog = (assignment) => {
+    setEditingAssignment(assignment);
+    setAssignmentForm({
+      teacher_id: assignment.teacher_id,
+      classroom_id: assignment.classroom_id,
+      day: assignment.day
+    });
+    setShowEditDialog(true);
   };
 
   const downloadPDF = async (weekNumber) => {
