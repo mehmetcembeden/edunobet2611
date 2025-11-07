@@ -28,6 +28,10 @@ export default function DutyAssignmentsTab() {
     classroom_id: '',
     day: 0
   });
+  const [dateRange, setDateRange] = useState({
+    start_date: '',
+    end_date: ''
+  });
 
   useEffect(() => {
     fetchAll();
