@@ -227,6 +227,26 @@ export default function DutyAssignmentsTab() {
                   className="w-20 h-9"
                 />
               </div>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="start-date" className="text-sm whitespace-nowrap">Başlangıç:</Label>
+                <Input
+                  id="start-date"
+                  type="date"
+                  value={dateRange.start_date}
+                  onChange={(e) => setDateRange({...dateRange, start_date: e.target.value})}
+                  className="h-9"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="end-date" className="text-sm whitespace-nowrap">Bitiş:</Label>
+                <Input
+                  id="end-date"
+                  type="date"
+                  value={dateRange.end_date}
+                  onChange={(e) => setDateRange({...dateRange, end_date: e.target.value})}
+                  className="h-9"
+                />
+              </div>
               <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
                 <DialogTrigger asChild>
                   <Button 
