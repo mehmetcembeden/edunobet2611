@@ -8,6 +8,7 @@ import TeachersTab from '@/components/TeachersTab';
 import DutyAssignmentsTab from '@/components/DutyAssignmentsTab';
 import SchoolDutyTab from '@/components/SchoolDutyTab';
 import ArchiveTab from '@/components/ArchiveTab';
+import StatisticsTab from '@/components/StatisticsTab';
 
 export default function Dashboard({ user, onLogout }) {
   const [activeTab, setActiveTab] = useState('locations');
