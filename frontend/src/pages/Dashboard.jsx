@@ -16,22 +16,22 @@ export default function Dashboard({ user, onLogout }) {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-50">
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-md border-b border-purple-100 sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-purple-700 flex items-center justify-center shadow-md">
-                <BookCheck className="w-6 h-6 text-white" />
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-purple-600 to-purple-700 flex items-center justify-center shadow-md">
+                <BookCheck className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent">
+                <h1 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent">
                   eduNÖBET
                 </h1>
-                <p className="text-xs text-gray-500">Nöbet Yönetim Sistemi</p>
+                <p className="text-[10px] sm:text-xs text-gray-500 hidden sm:block">Nöbet Yönetim Sistemi</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-4">
-              <div className="text-right">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="text-right hidden md:block">
                 <p className="text-sm font-medium text-gray-700" data-testid="user-name">{user.name}</p>
                 <p className="text-xs text-gray-500">{user.email}</p>
               </div>
@@ -39,10 +39,11 @@ export default function Dashboard({ user, onLogout }) {
                 onClick={onLogout}
                 data-testid="logout-button"
                 variant="outline"
-                className="gap-2 border-purple-200 hover:bg-purple-50 hover:border-purple-300 transition-colors"
+                size="sm"
+                className="gap-1 sm:gap-2 border-purple-200 hover:bg-purple-50 hover:border-purple-300 transition-colors"
               >
-                <LogOut className="w-4 h-4" />
-                Çıkış
+                <LogOut className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Çıkış</span>
               </Button>
             </div>
           </div>
@@ -50,7 +51,7 @@ export default function Dashboard({ user, onLogout }) {
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="bg-white/80 backdrop-blur-sm p-1.5 h-auto flex-wrap gap-1 shadow-md border border-purple-100" data-testid="main-tabs">
             <TabsTrigger 
