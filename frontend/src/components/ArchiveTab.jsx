@@ -266,11 +266,21 @@ export default function ArchiveTab() {
         </CardContent>
       </Card>
 
-      {/* View Dialog */}
+      {/* Edit/View Dialog */}
       <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
         <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Hafta {selectedWeek} - Nöbet Çizelgesi</DialogTitle>
+            <div className="flex items-center justify-between">
+              <DialogTitle>Hafta {selectedWeek} - Nöbet Çizelgesi (Düzenlenebilir)</DialogTitle>
+              <Button
+                onClick={() => setShowAddDialog(true)}
+                size="sm"
+                className="bg-green-600 hover:bg-green-700 gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Nöbet Ekle
+              </Button>
+            </div>
           </DialogHeader>
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
@@ -297,13 +307,29 @@ export default function ArchiveTab() {
                       return (
                         <td key={dayIdx} className="border border-purple-200 p-2 align-top">
                           {assignment ? (
-                            <div className="bg-gradient-to-br from-purple-100 to-white p-2 rounded">
+                            <div className="group relative bg-gradient-to-br from-purple-100 to-white p-2 rounded min-h-[60px]">
                               <div className="font-medium text-sm text-purple-800">
                                 {getTeacherName(assignment.teacher_id)}
                               </div>
+                              <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                                <button
+                                  onClick={() => openEditDialog(assignment)}
+                                  className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-blue-600"
+                                  title="Düzenle"
+                                >
+                                  <Edit className="w-3 h-3" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteAssignment(assignment.id)}
+                                  className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                                  title="Sil"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              </div>
                             </div>
                           ) : (
-                            <div className="text-center text-gray-400">-</div>
+                            <div className="text-center text-gray-400 min-h-[60px] flex items-center justify-center">-</div>
                           )}
                         </td>
                       );
@@ -313,6 +339,104 @@ export default function ArchiveTab() {
               </tbody>
             </table>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Assignment Dialog */}
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent className="sm:max-w-md mx-4">
+          <DialogHeader>
+            <DialogTitle>Nöbet Ekle</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleAddAssignment} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Öğretmen</Label>
+              <select
+                className="w-full p-2 border rounded-md bg-white text-sm"
+                value={assignmentForm.teacher_id}
+                onChange={(e) => setAssignmentForm({ ...assignmentForm, teacher_id: e.target.value })}
+                required
+              >
+                <option value="">Seçiniz</option>
+                {teachers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>Nöbet Yeri</Label>
+              <select
+                className="w-full p-2 border rounded-md bg-white text-sm"
+                value={assignmentForm.classroom_id}
+                onChange={(e) => setAssignmentForm({ ...assignmentForm, classroom_id: e.target.value })}
+                required
+              >
+                <option value="">Seçiniz</option>
+                {classrooms.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>Gün</Label>
+              <select
+                className="w-full p-2 border rounded-md bg-white text-sm"
+                value={assignmentForm.day}
+                onChange={(e) => setAssignmentForm({ ...assignmentForm, day: parseInt(e.target.value) })}
+                required
+              >
+                {DAYS.map((day, idx) => <option key={idx} value={idx}>{day}</option>)}
+              </select>
+            </div>
+            <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-purple-700">
+              Ekle
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Assignment Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="sm:max-w-md mx-4">
+          <DialogHeader>
+            <DialogTitle>Nöbet Düzenle</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleEditAssignment} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Öğretmen</Label>
+              <select
+                className="w-full p-2 border rounded-md bg-white text-sm"
+                value={assignmentForm.teacher_id}
+                onChange={(e) => setAssignmentForm({ ...assignmentForm, teacher_id: e.target.value })}
+                required
+              >
+                <option value="">Seçiniz</option>
+                {teachers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>Nöbet Yeri</Label>
+              <select
+                className="w-full p-2 border rounded-md bg-white text-sm"
+                value={assignmentForm.classroom_id}
+                onChange={(e) => setAssignmentForm({ ...assignmentForm, classroom_id: e.target.value })}
+                required
+              >
+                <option value="">Seçiniz</option>
+                {classrooms.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>Gün</Label>
+              <select
+                className="w-full p-2 border rounded-md bg-white text-sm"
+                value={assignmentForm.day}
+                onChange={(e) => setAssignmentForm({ ...assignmentForm, day: parseInt(e.target.value) })}
+                required
+              >
+                {DAYS.map((day, idx) => <option key={idx} value={idx}>{day}</option>)}
+              </select>
+            </div>
+            <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-purple-700">
+              Güncelle
+            </Button>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
