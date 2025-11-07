@@ -456,16 +456,16 @@ async def generate_duty_assignments(week_number: int, current_user: User = Depen
         teacher_id = teacher['id']
         duty_days = [a for a in assignments if a.teacher_id == teacher_id]
         
-        # Check if teacher has heavy class load on duty days
+        # Check if teacher has heavy workload on duty days
         for assignment in duty_days:
-            class_count = teacher_schedule_count.get(f"{teacher_id}_{assignment.day}", 0)
-            if class_count >= 7:  # Heavy day (7+ classes)
+            hours_that_day = teacher_workload.get(teacher_id, [0,0,0,0,0])[assignment.day]
+            if hours_that_day >= 7:  # Heavy day (7+ hours)
                 suggestions.append({
                     "teacher_id": teacher_id,
                     "teacher_name": teacher['name'],
                     "day": assignment.day,
-                    "class_count": class_count,
-                    "suggestion": f"{teacher['name']} bu gün {class_count} ders yapıyor. Nöbet vermemek daha uygun olabilir."
+                    "hours_count": hours_that_day,
+                    "suggestion": f"{teacher['name']} bu gün {hours_that_day} saat ders yapıyor. Nöbet vermemek daha uygun olabilir."
                 })
     
     return {
