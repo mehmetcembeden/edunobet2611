@@ -320,7 +320,7 @@ export default function DutyAssignmentsTab() {
             </div>
           )}
 
-          {/* Duty Table */}
+          {/* Duty Tables - One per School */}
           {assignments.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <Clock className="w-12 h-12 mx-auto mb-3 opacity-30" />
@@ -328,62 +328,77 @@ export default function DutyAssignmentsTab() {
               <p className="text-sm mt-2">"Nöbet Oluştur" butonuna tıklayarak otomatik atama yapabilirsiniz</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr>
-                    <th className="border border-purple-200 bg-gradient-to-r from-purple-600 to-purple-700 text-white p-3 text-sm font-medium">
-                      Nöbet Yeri
-                    </th>
-                    {DAYS.map((day, idx) => (
-                      <th key={idx} className="border border-purple-200 bg-gradient-to-r from-purple-600 to-purple-700 text-white p-3 text-sm font-medium">
-                        {day}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {tableData.map((row) => (
-                    <tr key={row.classroom.id}>
-                      <td className="border border-purple-200 bg-purple-50 p-3 font-medium">
-                        {row.classroom.name}
-                      </td>
-                      {DAYS.map((_, dayIdx) => {
-                        const assignment = row[`day_${dayIdx}`];
-                        return (
-                          <td key={dayIdx} className="border border-purple-200 p-2 align-top">
-                            {assignment ? (
-                              <div className="group relative bg-gradient-to-br from-purple-100 to-white p-2 rounded min-h-[60px]">
-                                <div className="font-medium text-sm text-purple-800">
-                                  {getTeacherName(assignment.teacher_id)}
-                                </div>
-                                <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                                  <button
-                                    onClick={() => openEditDialog(assignment)}
-                                    className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-blue-600"
-                                    title="Düzenle"
-                                  >
-                                    <Edit className="w-3 h-3" />
-                                  </button>
-                                  <button
-                                    onClick={() => handleDelete(assignment.id)}
-                                    className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
-                                    title="Sil"
-                                  >
-                                    <Trash2 className="w-3 h-3" />
-                                  </button>
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="text-center text-gray-400 min-h-[60px] flex items-center justify-center">-</div>
-                            )}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="space-y-8">
+              {schools.map((school) => {
+                const tableData = schoolTableData[school.id] || [];
+                if (tableData.length === 0) return null;
+                
+                return (
+                  <div key={school.id} className="space-y-4">
+                    <h3 className="text-xl font-bold text-purple-800 flex items-center gap-2">
+                      <div className="w-2 h-8 bg-purple-600 rounded"></div>
+                      {school.name}
+                    </h3>
+                    <div className="overflow-x-auto">
+                      <table className="w-full border-collapse">
+                        <thead>
+                          <tr>
+                            <th className="border border-purple-200 bg-gradient-to-r from-purple-600 to-purple-700 text-white p-3 text-sm font-medium">
+                              Nöbet Yeri
+                            </th>
+                            {DAYS.map((day, idx) => (
+                              <th key={idx} className="border border-purple-200 bg-gradient-to-r from-purple-600 to-purple-700 text-white p-3 text-sm font-medium">
+                                {day}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {tableData.map((row) => (
+                            <tr key={row.classroom.id}>
+                              <td className="border border-purple-200 bg-purple-50 p-3 font-medium">
+                                {row.classroom.name}
+                              </td>
+                              {DAYS.map((_, dayIdx) => {
+                                const assignment = row[`day_${dayIdx}`];
+                                return (
+                                  <td key={dayIdx} className="border border-purple-200 p-2 align-top">
+                                    {assignment ? (
+                                      <div className="group relative bg-gradient-to-br from-purple-100 to-white p-2 rounded min-h-[60px]">
+                                        <div className="font-medium text-sm text-purple-800">
+                                          {getTeacherName(assignment.teacher_id)}
+                                        </div>
+                                        <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                                          <button
+                                            onClick={() => openEditDialog(assignment)}
+                                            className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-blue-600"
+                                            title="Düzenle"
+                                          >
+                                            <Edit className="w-3 h-3" />
+                                          </button>
+                                          <button
+                                            onClick={() => handleDelete(assignment.id)}
+                                            className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                                            title="Sil"
+                                          >
+                                            <Trash2 className="w-3 h-3" />
+                                          </button>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div className="text-center text-gray-400 min-h-[60px] flex items-center justify-center">-</div>
+                                    )}
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </CardContent>
