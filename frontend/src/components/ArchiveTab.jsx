@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { API } from '@/App';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Archive, Download, RefreshCw, Eye, Share2 } from 'lucide-react';
+import { Archive, Download, RefreshCw, Eye, Share2, Edit, Trash2, Plus, Save } from 'lucide-react';
 
 const DAYS = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma'];
 
@@ -16,7 +17,16 @@ export default function ArchiveTab() {
   const [teachers, setTeachers] = useState([]);
   const [classrooms, setClassrooms] = useState([]);
   const [showViewDialog, setShowViewDialog] = useState(false);
+  const [editMode, setEditMode] = useState(false);
   const [transforming, setTransforming] = useState(false);
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [editingAssignment, setEditingAssignment] = useState(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [assignmentForm, setAssignmentForm] = useState({
+    teacher_id: '',
+    classroom_id: '',
+    day: 0
+  });
 
   useEffect(() => {
     fetchArchives();
