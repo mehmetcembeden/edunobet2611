@@ -202,9 +202,9 @@ export default function TeachersTab() {
         </CardHeader>
         <CardContent className="p-4 sm:p-6">
           {teachers.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              <Users className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p>Henüz öğretmen eklenmemiş</p>
+            <div className="text-center py-8 sm:py-12 text-gray-500">
+              <Users className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 opacity-30" />
+              <p className="text-sm sm:text-base">Henüz öğretmen eklenmemiş</p>
             </div>
           ) : (
             <div className="grid gap-3">
@@ -212,25 +212,37 @@ export default function TeachersTab() {
                 <div 
                   key={teacher.id} 
                   data-testid={`teacher-item-${teacher.id}`}
-                  className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-purple-50 to-white border border-purple-100 hover:shadow-md transition-all"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 rounded-lg bg-gradient-to-r from-purple-50 to-white border border-purple-100 hover:shadow-md transition-all gap-3"
                 >
                   <div className="flex-1">
-                    <p className="font-semibold text-gray-800">{teacher.name}</p>
-                    <p className="text-sm text-gray-600 mt-1">{getSchoolNames(teacher.school_ids)}</p>
-                    <div className="flex items-center gap-1 mt-2 text-sm text-purple-600">
-                      <Clock className="w-4 h-4" />
-                      <span>Haftalık limit: {teacher.weekly_duty_limit} saat</span>
+                    <p className="font-semibold text-gray-800 text-sm sm:text-base">{teacher.name}</p>
+                    <p className="text-xs sm:text-sm text-gray-600 mt-1">{getSchoolNames(teacher.school_ids)}</p>
+                    <div className="flex items-center gap-1 mt-2 text-xs sm:text-sm text-purple-600">
+                      <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span>Haftalık limit: {teacher.weekly_duty_limit} gün</span>
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    data-testid={`delete-teacher-${teacher.id}`}
-                    onClick={() => handleDeleteTeacher(teacher.id)}
-                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => openEditDialog(teacher)}
+                      className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 flex-1 sm:flex-none"
+                    >
+                      <Edit className="w-4 h-4 sm:mr-2" />
+                      <span className="sm:inline">Düzenle</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      data-testid={`delete-teacher-${teacher.id}`}
+                      onClick={() => handleDeleteTeacher(teacher.id)}
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50 flex-1 sm:flex-none"
+                    >
+                      <Trash2 className="w-4 h-4 sm:mr-2" />
+                      <span className="sm:inline">Sil</span>
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
