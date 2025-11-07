@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LogOut, BookCheck } from 'lucide-react';
 import DutyLocationsTab from '@/components/DutyLocationsTab';
-import ScheduleTab from '@/components/ScheduleTab';
+import TeacherWorkloadTab from '@/components/TeacherWorkloadTab';
 import TeachersTab from '@/components/TeachersTab';
 import DutyAssignmentsTab from '@/components/DutyAssignmentsTab';
 import SchoolDutyTab from '@/components/SchoolDutyTab';
