@@ -367,9 +367,9 @@ async def get_teacher_schedule(teacher_id: str, current_user: User = Depends(get
 
 @api_router.post("/duty-assignments/generate")
 async def generate_duty_assignments(week_number: int, current_user: User = Depends(get_current_user)):
-    # Get all teachers, schedules, and classrooms
+    # Get all teachers, teacher schedules, and classrooms
     teachers = await db.teachers.find({"user_id": current_user.id}, {"_id": 0}).to_list(1000)
-    schedules = await db.schedules.find({"user_id": current_user.id}, {"_id": 0}).to_list(10000)
+    teacher_schedules = await db.teacher_schedules.find({"user_id": current_user.id}, {"_id": 0}).to_list(1000)
     classrooms = await db.classrooms.find({"user_id": current_user.id}, {"_id": 0}).to_list(1000)
     
     # Clear existing unapproved assignments for this week
@@ -378,11 +378,10 @@ async def generate_duty_assignments(week_number: int, current_user: User = Depen
     assignments = []
     teacher_duty_count = {t['id']: 0 for t in teachers}
     
-    # Calculate teacher workload per day (number of classes)
-    teacher_schedule_count = {}
-    for schedule in schedules:
-        key = f"{schedule['teacher_id']}_{schedule['day']}"
-        teacher_schedule_count[key] = teacher_schedule_count.get(key, 0) + 1
+    # Create teacher schedule lookup: teacher_id -> [hours per day]
+    teacher_workload = {}
+    for ts in teacher_schedules:
+        teacher_workload[ts['teacher_id']] = ts['weekly_hours']
     
     # Track which classroom+day combinations are assigned
     assigned_locations = set()
