@@ -34,12 +34,14 @@ export default function DutyAssignmentsTab() {
 
   const fetchAll = async () => {
     try {
-      const [teachersRes, classroomsRes] = await Promise.all([
+      const [teachersRes, classroomsRes, schoolsRes] = await Promise.all([
         axios.get(`${API}/teachers`),
-        axios.get(`${API}/classrooms`)
+        axios.get(`${API}/classrooms`),
+        axios.get(`${API}/schools`)
       ]);
       setTeachers(teachersRes.data);
       setClassrooms(classroomsRes.data);
+      setSchools(schoolsRes.data);
       await fetchAssignments();
     } catch (error) {
       toast.error('Veriler yüklenemedi');
