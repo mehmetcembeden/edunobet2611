@@ -102,8 +102,8 @@ export default function Dashboard({ user, onLogout }) {
             <DutyLocationsTab />
           </TabsContent>
 
-          <TabsContent value="schedule" className="mt-6">
-            <ScheduleTab />
+          <TabsContent value="workload" className="mt-6">
+            <TeacherWorkloadTab />
           </TabsContent>
 
           <TabsContent value="teachers" className="mt-6">
