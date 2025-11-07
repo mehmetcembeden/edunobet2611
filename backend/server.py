@@ -120,6 +120,8 @@ class DutyAssignment(BaseModel):
     classroom_id: str  # Classroom/location ID
     day: int  # 0-4 (Monday-Friday)
     week_number: int
+    start_date: Optional[str] = None  # Start date of the week
+    end_date: Optional[str] = None  # End date of the week
     approved: bool = False
     approved_at: Optional[datetime] = None
     transformed_from: Optional[str] = None  # ID of original assignment
