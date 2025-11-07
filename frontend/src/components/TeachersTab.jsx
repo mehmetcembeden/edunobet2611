@@ -116,22 +116,22 @@ export default function TeachersTab() {
   };
 
   return (
-    <div className="space-y-6" data-testid="teachers-tab">
+    <div className="space-y-4 sm:space-y-6" data-testid="teachers-tab">
       <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
-        <CardHeader>
-          <div className="flex items-center justify-between">
+        <CardHeader className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <CardTitle className="text-2xl flex items-center gap-2">
-                <Users className="w-6 h-6 text-purple-600" />
+              <CardTitle className="text-xl sm:text-2xl flex items-center gap-2">
+                <Users className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
                 Öğretmenler
               </CardTitle>
-              <CardDescription>Öğretmenleri ve nöbet limitlerini yönetin</CardDescription>
+              <CardDescription className="text-sm">Öğretmenleri ve günlük nöbet limitlerini yönetin</CardDescription>
             </div>
-            <Dialog open={showDialog} onOpenChange={setShowDialog}>
+            <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
               <DialogTrigger asChild>
                 <Button 
                   data-testid="add-teacher-button"
-                  className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 gap-2 shadow-md"
+                  className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 gap-2 shadow-md w-full sm:w-auto"
                   disabled={schools.length === 0}
                 >
                   <Plus className="w-4 h-4" />
