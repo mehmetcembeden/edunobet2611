@@ -7,12 +7,14 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Plus, Trash2, Users, Clock } from 'lucide-react';
+import { Plus, Trash2, Users, Calendar, Edit } from 'lucide-react';
 
 export default function TeachersTab() {
   const [teachers, setTeachers] = useState([]);
   const [schools, setSchools] = useState([]);
-  const [showDialog, setShowDialog] = useState(false);
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingTeacher, setEditingTeacher] = useState(null);
   const [teacherForm, setTeacherForm] = useState({
     name: '',
     school_ids: [],
