@@ -249,6 +249,65 @@ export default function TeachersTab() {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Teacher Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="sm:max-w-md mx-4">
+          <DialogHeader>
+            <DialogTitle>Öğretmen Düzenle</DialogTitle>
+            <DialogDescription>Öğretmen bilgilerini güncelleyin</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleEditTeacher} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-teacher-name">Öğretmen Adı</Label>
+              <Input
+                id="edit-teacher-name"
+                placeholder="Örnek: Ahmet Yılmaz"
+                value={teacherForm.name}
+                onChange={(e) => setTeacherForm({ ...teacherForm, name: e.target.value })}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Görevli Okullar</Label>
+              <div className="space-y-2 max-h-48 overflow-y-auto border rounded-md p-3">
+                {schools.map((school) => (
+                  <label key={school.id} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={teacherForm.school_ids.includes(school.id)}
+                      onChange={() => handleSchoolToggle(school.id)}
+                      className="w-4 h-4 text-purple-600 rounded"
+                    />
+                    <span className="text-sm">{school.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-weekly-limit">
+                Haftalık Nöbet Limiti
+                <span className="text-xs text-gray-500 ml-2">(gün/hafta)</span>
+              </Label>
+              <Input
+                id="edit-weekly-limit"
+                type="number"
+                min="1"
+                max="5"
+                value={teacherForm.weekly_duty_limit}
+                onChange={(e) => setTeacherForm({ ...teacherForm, weekly_duty_limit: parseInt(e.target.value) })}
+                required
+              />
+            </div>
+            <Button 
+              type="submit"
+              className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800"
+            >
+              Güncelle
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
