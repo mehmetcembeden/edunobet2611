@@ -54,11 +54,38 @@ export default function TeachersTab() {
       await axios.post(`${API}/teachers`, teacherForm);
       toast.success('Öğretmen eklendi');
       setTeacherForm({ name: '', school_ids: [], weekly_duty_limit: 5 });
-      setShowDialog(false);
+      setShowAddDialog(false);
       fetchTeachers();
     } catch (error) {
       toast.error('Öğretmen eklenemedi');
     }
+  };
+
+  const handleEditTeacher = async (e) => {
+    e.preventDefault();
+    if (teacherForm.school_ids.length === 0) {
+      toast.error('En az bir okul seçmelisiniz');
+      return;
+    }
+    try {
+      await axios.put(`${API}/teachers/${editingTeacher.id}`, teacherForm);
+      toast.success('Öğretmen güncellendi');
+      setShowEditDialog(false);
+      setEditingTeacher(null);
+      fetchTeachers();
+    } catch (error) {
+      toast.error('Öğretmen güncellenemedi');
+    }
+  };
+
+  const openEditDialog = (teacher) => {
+    setEditingTeacher(teacher);
+    setTeacherForm({
+      name: teacher.name,
+      school_ids: teacher.school_ids,
+      weekly_duty_limit: teacher.weekly_duty_limit
+    });
+    setShowEditDialog(true);
   };
 
   const handleDeleteTeacher = async (id) => {
