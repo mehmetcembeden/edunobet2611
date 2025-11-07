@@ -90,6 +90,19 @@ export default function DutyAssignmentsTab() {
     }
   };
 
+  const handleClear = async () => {
+    if (!window.confirm('Bu haftanın tüm nöbet atamalarını silmek istediğinizden emin misiniz?')) return;
+    try {
+      // Delete all unapproved assignments for this week
+      await Promise.all(assignments.map(a => axios.delete(`${API}/duty-assignments/${a.id}`)));
+      toast.success('Nöbetler temizlendi');
+      await fetchAssignments();
+      setSuggestions([]);
+    } catch (error) {
+      toast.error('Temizleme başarısız');
+    }
+  };
+
   const handleAdd = async (e) => {
     e.preventDefault();
     try {
