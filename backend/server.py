@@ -387,50 +387,69 @@ async def generate_duty_assignments(week_number: int, current_user: User = Depen
     # Track which classroom+day combinations are assigned
     assigned_locations = set()
     
-    # Assign duties: one teacher per classroom per day
-    for day in range(5):  # Monday to Friday
-        for classroom in classrooms:
-            location_key = f"{classroom['id']}_{day}"
-            if location_key in assigned_locations:
-                continue
-            
-            # Find suitable teacher
-            suitable_teachers = [
-                t for t in teachers 
-                if teacher_duty_count[t['id']] < t['weekly_duty_limit']
-            ]
-            
-            if not suitable_teachers:
-                continue
-            
-            # Sort by: least duties assigned, then least classes that day
-            suitable_teachers.sort(
-                key=lambda t: (
-                    teacher_duty_count[t['id']], 
-                    teacher_schedule_count.get(f"{t['id']}_{day}", 0)
+    # Group classrooms by school
+    classrooms_by_school = {}
+    for classroom in classrooms:
+        school_id = classroom['school_id']
+        if school_id not in classrooms_by_school:
+            classrooms_by_school[school_id] = []
+        classrooms_by_school[school_id].append(classroom)
+    
+    # Assign duties for each school separately
+    for school_id, school_classrooms in classrooms_by_school.items():
+        # Get teachers assigned to this school
+        school_teachers = [
+            t for t in teachers 
+            if school_id in t['school_ids']
+        ]
+        
+        if not school_teachers:
+            continue
+        
+        # Assign duties: one teacher per classroom per day
+        for day in range(5):  # Monday to Friday
+            for classroom in school_classrooms:
+                location_key = f"{classroom['id']}_{day}"
+                if location_key in assigned_locations:
+                    continue
+                
+                # Find suitable teacher for this school
+                suitable_teachers = [
+                    t for t in school_teachers 
+                    if teacher_duty_count[t['id']] < t['weekly_duty_limit']
+                ]
+                
+                if not suitable_teachers:
+                    continue
+                
+                # Sort by: least duties assigned, then least classes that day
+                suitable_teachers.sort(
+                    key=lambda t: (
+                        teacher_duty_count[t['id']], 
+                        teacher_schedule_count.get(f"{t['id']}_{day}", 0)
+                    )
                 )
-            )
-            
-            selected_teacher = suitable_teachers[0]
-            
-            assignment = DutyAssignment(
-                teacher_id=selected_teacher['id'],
-                classroom_id=classroom['id'],
-                day=day,
-                week_number=week_number,
-                approved=False,
-                user_id=current_user.id
-            )
-            
-            doc = assignment.model_dump()
-            doc['created_at'] = doc['created_at'].isoformat()
-            if doc.get('approved_at'):
-                doc['approved_at'] = doc['approved_at'].isoformat()
-            await db.duty_assignments.insert_one(doc)
-            
-            teacher_duty_count[selected_teacher['id']] += 1
-            assigned_locations.add(location_key)
-            assignments.append(assignment)
+                
+                selected_teacher = suitable_teachers[0]
+                
+                assignment = DutyAssignment(
+                    teacher_id=selected_teacher['id'],
+                    classroom_id=classroom['id'],
+                    day=day,
+                    week_number=week_number,
+                    approved=False,
+                    user_id=current_user.id
+                )
+                
+                doc = assignment.model_dump()
+                doc['created_at'] = doc['created_at'].isoformat()
+                if doc.get('approved_at'):
+                    doc['approved_at'] = doc['approved_at'].isoformat()
+                await db.duty_assignments.insert_one(doc)
+                
+                teacher_duty_count[selected_teacher['id']] += 1
+                assigned_locations.add(location_key)
+                assignments.append(assignment)
     
     # Analyze and provide suggestions
     suggestions = []
